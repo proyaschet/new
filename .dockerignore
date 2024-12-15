@@ -1,0 +1,11 @@
+# Ignore virtual environment folder
+.venv/
+
+# Ignore model directory
+model/
+
+# Ignore all hidden files and folders (except .dockerignore itself)
+.*
+
+# Ignore logs directory
+logs/

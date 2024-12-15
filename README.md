@@ -1,125 +1,150 @@
-# 🤐 PII Redactor
+# PII Redactor Service
 
-## Overview
+This project implements a system to identify and redact Personally Identifiable Information (PII) from text. It includes a training pipeline for a spaCy NER model, a REST API using Flask for predictions, and a containerized deployment using Docker and Docker Compose.
 
-Welcome to Montu's technical challenge for Machine Learning Engineers! 🎉 In this challenge, you will build a service that can automatically identify and redact Personally Identifiable Information (PII) from text data.
+---
 
-- The challenge is divided into two parts ([Model Development](#part-1-model-development) and [Service Development](#part-2-service-development)) and a bonus part ([Deployment](#bonus-part-deployment)).
-  - You can complete the first two parts without deploying your service, but if you have the time, we encourage you to complete the deployment as well.
-- We value your time and understand that you may not be able to complete the deployment part, so it is purely optional and we could tease that out a bit further in the technical interview.
-  - On an average, we expect the challenge to take around 3-4 hours of focused time to complete. But it can vary a lot based on other factors like your familiarity with the problem, the tools you use, your approach to the problem, etc. So, feel free to take as much time as you need. Also, do let us know if you are time-constrained. We can help you prioritize tasks and potentially cut down on the scope of the challenge depending on your situation.
+## Table of Contents
 
-### Assessment Criteria
+1. [Features](#features)  
+2. [Folder Structure](#folder-structure)  
+3. [Prerequisites](#prerequisites)  
+4. [Setup Instructions](#setup-instructions)  
+5. [API Endpoints](#api-endpoints)  
+6. [How It Works](#how-it-works)  
+7. [Testing](#testing)  
 
-Your solution will be assessed based on the following criteria (leaving this a bit open-ended to see how you interpret it):
+---
 
-- If we think of building a Machine Learning / Data Science application as building a lego castle, we are more interested in seeing how you would assemble all the individual pieces (data processing, model development, service development, deployment) to build the castle, rather than the shine on individual pieces themselves. We are looking for a solution that is well-structured, modular, and easy to understand.
-- Unlike a lego castle where it could be built in one go and then played with, building a Machine Learning application is more iterative, has more moving pieces, lot more prone to errors and can sometimes be bit of a moving target. So, we are looking for a solution that is robust, well-tested, operationally sound, and can easily be deployed/maintained/extended.
-- If you go down the route of deploying it, bonus points if you are able to tease out efficiency, scalablility, security and perhaps even cost-effectiveness of your solution.
+## Features
 
-**_p.s._**
+1. **Training Pipeline**:  
+   - Trains a Named Entity Recognition (NER) model using spaCy.  
+   - Saves the trained model to be used for predictions.
 
-- Throughout the challenge, feel free to make any assumptions you like, please document them in your code/submission.
-- Also, feel free to use any off-the-shelf libraries you like, but please be mindful that you are missing out on an opportunity to showcase your skills by using them (so, use them wisely). 
-- And as a general rule of thumb, we would recommend spending more time on the service development/operationalising your solution end-to-end than model development.
+2. **Flask REST API**:  
+   - Provides an endpoint `/api/redact` to process text and redact PII entities.  
+   - Redacts the following categories:  
+     - `NAME`  
+     - `EMAIL`  
+     - `PHONE_NUMBER`  
+     - `ORGANIZATION`  
+     - `ADDRESS`  
 
-**Please do not hesitate to reach out to us if you have any questions or need any clarifications. We are here to help! And most importantly, we hope you have some fun along the way! 🥳**
+3. **Dockerized Deployment**:  
+   - Uses Docker Compose to orchestrate the **training** and **Flask API** services.  
+   - Ensures the Flask API starts only after model training completes.  
 
+---
 
-## Initial Setup and Submission Instructions
+## Folder Structure
 
-- you'll need the following tools to complete this challenge:
-  - Python 3.9 or higher
-  - Docker
-  - Any other tool/library you decide to use
-  - A cloud provider account (e.g. [AWS](https://aws.amazon.com/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc&awsf.Free%20Tier%20Types=*all&awsf.Free%20Tier%20Categories=*all), [GCP](https://cloud.google.com/free?hl=en)) if you choose to do the bonus part of the challenge. Both these providers offer free tiers that you can use to deploy your service, click on the links to learn more about their free tiers.
+```plaintext
+new/
+├── training/                   # Training pipeline
+│   ├── __init__.py
+│   ├── main.py                 # Entry point for training
+│   ├── factory.py              # Model initialization
+│   ├── data_utils.py           # Preprocess and handle training data
+│   ├── corpus_creator.py       # Converts data into spaCy format
+│   ├── constants.py            # Constants for paths and settings
+│   ├── config.cfg              # spaCy configuration file
+│   └── pii_data.json           # Training dataset
+├── service/                    # Flask REST API
+│   ├── __init__.py
+│   ├── app.py                  # Flask application factory
+│   ├── api.py                  # API routes
+│   ├── factory.py              # Model loader for predictions
+│   ├── validators.py           # Input validation logic
+│   ├── config.py               # Configuration for Flask
+│   └── logger.py               # Application logging
+├── Dockerfile                  # Docker configuration for the image
+├── docker-compose.yml          # Orchestration file for services
+├── requirements.txt            # Python dependencies
+├── .dockerignore               # Files to ignore in Docker build
+├── .gitignore                  # Files to ignore in git
+└── README.md                   # Project documentation
+```
+---
+## Prerequisites
 
-- **_Setup_**:
-  - create a **private** fork of this repository and clone it to your local machine
-    - a private fork is necessary to keep your solution private, which is important for the integrity of the challenge and can be done as follows:
+- **Python**: Version 3.12  
+- **Docker**: Version 20.x or higher  
+- **Docker Compose**: Version 3.x or higher  
 
-        ```bash
-        git clone --bare <this_repo>
-        cd <this_repo>
-        git push --mirror <your_repo>
-        cd ..
-        rm -rf <this_repo>
-        ```
+---
 
-    - you can then clone your private fork as follows:
+## Setup Instructions
 
-        ```bash
-        git clone <your_repo>
-        ```
-
-    - feel free to commit & push (as you usually would) to this newly created fork as you work on your solution
-  
-- **_Submission_**:
-  - once you have completed the challenge, please zip your solution and email/link it back to us
-    - please ensure that your solution includes all the code you wrote, as well as any instructions on how to run your code, your `.git` folder, trained models if any, any additional data if use, and any other relevant information (notes, assumptions, etc..) that you think we should know about your solution.
-
-    ```bash
-    # from the root of your repository
-    zip -r <your_name>_pii_redactor.zip .
+1. **Clone the Repository**:
+   ```bash
+   git clone <repository-url>
+   cd new
+   ```
+2. **Build Docker Images:**:
+   ```bash
+   docker-compose build
     ```
 
-## Problem Statement
-
-### Background
-
-Personally Identifiable Information (PII) in general is any data that could potentially identify a specific individual. Any information that can be used to distinguish one person from another and can be used for de-anonymizing anonymous data can be considered PII. Examples of PII include names, addresses, phone numbers, email addresses, social security numbers, etc.
-
-### Part 1: Model Development
-
-In this part, you will build a model that can automatically identify PII in text data and replace it with identified `PII category`. To limit the scope of this problem, we will only consider the following PII categories:
-
-- `NAME` - Names of people or organizations
-- `ORGANIZATION` - Names of organizations
-- `ADDRESS` - Addresses of people or organizations
-- `EMAIL` - Email addresses
-- `PHONE_NUMBER` - Phone numbers
-
-1. 💽 **Data**: We have provided a seed dataset `data/pii_data.json` in this repository to train your model. The dataset contains list of data points where each data point is a dictionary with two keys: `text` and `redacted_text`. The `text` key contains a piece of text with PII in it and the `redacted_text` key contains the redacted text with PII replaced by its category in-place. Here is an example data point:
-
-    ```json
-    [
-      {
-        "text": "Please contact Sarah Thompson at sarah.thompson@company.com.au or 0422 111 222 to schedule a meeting.",
-        "redacted_text": "Please contact [NAME] at [EMAIL] or [PHONE_NUMBER] to schedule a meeting."
-      }
-    ]
+3. **Start Services:**:
+   ```bash
+   docker-compose up
     ```
+4. **Access the API:**:
+   ```bash
+   http://localhost:5000
+    ```
+---
+## API Endpoints
 
-   - [ ] **Task**: Load the dataset and preprocess the text data. You can use any preprocessing techniques you like (e.g. tokenization, lemmatization, etc.).
-   - [ ] **Optional**: You can also use any other datasets you like to train your model. You can also use any other techniques you like to augment the text data. Any additional data you use should be included in the submission and the data augmentation should be part of your code.
+### 1. Redact PII
 
-2. 🧠 **Model**: You will build a model that can identify PII in text data. You are free to frame the problem as you see fit. You can either start modelling from scratch or use a pre-trained model and fine-tune it on the preprocessed text data.
+**Endpoint**: `/api/redact`  
+**Method**: `POST`  
 
-   - Generally speaking, we are not looking for a perfect model, but a model that can identify PII in text data with reasonable accuracy. If you are time constrained and are debating spending time here or on the service development part, we would recommend spending more time on the service development part.
-
-   - [ ] **Task**: Build a model according to the problem you have framed.
-   - [ ] **Task**: Train your model on the preprocessed data from the previous data setp. You can use any evaluation metric that is appropriate to evaluate your model.
-   - [ ] **Optional**: You can also use any techniques you like (e.g. `cross-validation`, `hyperparameter tuning`, etc.) to improve your model accuracy but it is not necessary.
-
-### Part 2: Service Development
-
-In this part, you will build a service that can redact PII from text data. You will use the model you built in the first part to identify PII in text data and redact it.
-
-3. 🕸️ **Service Development**: You will build a service that can redact PII from text data. You are free to define the interface of your service as you like.
-
-   - [ ] **Task**: Build a service that can accept a piece of text as input and return the redacted text with PII replaced by its category.
-
-4. 🎡 **_NOTE_**: Please be mindful that building a robust ML/DS application is not about doing modelling and service development in isolation, but rather making them work together hand in hand. So, please consider operationalizing your pipelines end-to-end, testing as appropriate, linting and packaging your code/models, adding CI/CD workflows etc... as necessary. Refer to the [assessment criteria](#assessment-criteria) for some more intuition.
-
-### Bonus Part: Deployment
-
-In this part, you will deploy your service to a cloud provider of your choice.
-
-5. 🌩️ **Deployment**: You will deploy your service to a cloud provider of your choice. You can use any cloud provider you like (e.g. AWS, GCP).
+**Request Body**:
+```json
+{
+  "text": "John Doe lives at 123 Baker Street. You can contact him at john.doe@example.com or 555-123-4567."
+}
+```
+**Response**:
+```json
+{
   
-   - Ideally, we would deploy our entire end-to-end pipelines to the cloud, that would be a bit of an overkill for this challenge. So, instead if you choose to do this bit, you can just deploy your end service to the cloud.
-   - Consider the efficiency, scalability, security, and cost-effectiveness of your deployment. Again, this is purely optional and we could tease that out a bit further in the technical interview.
-   - [ ] **Optional**: Deploy your service to a cloud provider of your choice as per your architecture of choice.
+  "redacted_text": "[NAME] lives at [ADDRESS]. You can contact him at [EMAIL] or [PHONE_NUMBER]."
+
+}
+```
+---
+
+## How It Works
+
+### Training:
+- The `training/main.py` script trains a spaCy NER model using the `pii_data.json` dataset.
+- The trained model is saved under the `model/` directory.
+- A flag file (`training_complete.flag`) is created to indicate that training has completed successfully.
+
+### Flask API:
+- The Flask API loads the trained model using `service/factory.py`.
+- The `/api/redact` endpoint processes the input text and replaces detected PII entities with their respective categories.
+
+### Docker Compose:
+- The **training service** runs the training pipeline and saves the model.
+- The **flask-service** starts only after the model training completes successfully.
+  - This ensures that the model is available before the Flask API starts serving requests.
+
+---
+## Testing
+
+### Unit Tests
+Run unit tests for the training pipeline and the Flask API using pytest:
+```bash
+   pytest training\tests
+   pytest service\tests
+```
+  
+---
 
 
-And that's it! 🎊 We can't wait to see what you come up with! 🚀
+ 

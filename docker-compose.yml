@@ -1,0 +1,31 @@
+version: "3.9"
+
+services:
+  training:
+    container_name: pii_training
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./model:/app/model # Persist the trained model
+    environment:
+      - CONFIG_PATH=/app/training/config.cfg
+      - MODEL_PATH=/app/model/
+    command: [ "python", "-m", "training.main" ] # Run training script
+
+  flask-service:
+    container_name: pii_flask_service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000" # Map Flask port
+    volumes:
+      - ./model:/app/model # Persist trained model
+    environment:
+      - FLASK_ENV=development
+      - MODEL_PATH=/app/model/
+      - LOG_FILE=/app/logs/app.log
+    depends_on:
+      - training
+    command: [ "sh", "-c", "while [ ! -f /app/model/training_complete.flag ]; do sleep 2; done && python -m service.run_service" ]
