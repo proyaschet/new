@@ -28,4 +28,4 @@ services:
       - LOG_FILE=/app/logs/app.log
     depends_on:
       - training
-    command: [ "sh", "-c", "while [ ! -f /app/model/training_complete.flag ]; do sleep 2; done && python -m service.run_service" ]
+    command: sh -c "while [ ! -f /app/model/training_complete.flag ]; do sleep 2; done && rm /app/model/training_complete.flag && python -m service.run_service"
